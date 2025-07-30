@@ -150,6 +150,23 @@
             cursor: not-allowed;
             transform: translateY(0);
         }
+        .action-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease;
+        }
+        .action-btn:hover {
+            color: var(--text-main);
+            border-color: var(--border-card-glass);
+            background: var(--bg-card-glass);
+        }
+        .action-btn.delete:hover {
+            color: #f87171; /* red-400 */
+        }
+
 
         /* --- Modal Styles --- */
         .modal-overlay {
@@ -320,6 +337,40 @@
         </div>
     </div>
 
+    <!-- Add/Edit Webhook Modal -->
+    <div id="webhook-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="webhook-modal-title" class="text-2xl font-bold highlight mb-4">Add Webhook</h2>
+            <form id="webhook-form">
+                <input type="hidden" id="webhook-edit-index">
+                <div class="mb-4">
+                    <label for="webhook-title" class="block mb-2 font-mono" style="color: var(--text-muted);">Title</label>
+                    <input type="text" id="webhook-title" required class="w-full p-2 rounded bg-transparent border" style="border-color: var(--border-color);">
+                </div>
+                <div class="mb-4">
+                    <label for="webhook-description" class="block mb-2 font-mono" style="color: var(--text-muted);">Description</label>
+                    <input type="text" id="webhook-description" required class="w-full p-2 rounded bg-transparent border" style="border-color: var(--border-color);">
+                </div>
+                <div class="mb-4">
+                    <label for="webhook-url" class="block mb-2 font-mono" style="color: var(--text-muted);">URL</label>
+                    <input type="url" id="webhook-url" required class="w-full p-2 rounded bg-transparent border" style="border-color: var(--border-color);">
+                </div>
+                <div class="mb-6">
+                    <label for="webhook-status" class="block mb-2 font-mono" style="color: var(--text-muted);">Status</label>
+                    <select id="webhook-status" class="w-full p-2 rounded bg-transparent border" style="border-color: var(--border-color); color: var(--text-main); background-color: var(--bg-dark);">
+                        <option value="active" style="background-color: var(--bg-dark);">Active</option>
+                        <option value="inactive" style="background-color: var(--bg-dark);">Inactive</option>
+                    </select>
+                </div>
+                <div class="flex justify-between items-center">
+                    <button type="submit" class="control-btn">Save Webhook</button>
+                    <button type="button" id="webhook-modal-close-btn" class="control-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <!-- Add Link Modal -->
     <div id="add-link-modal" class="modal-overlay">
         <div class="modal-content">
@@ -343,6 +394,14 @@
         <div class="modal-content">
             <h2 class="text-2xl font-bold highlight mb-4">Changelog</h2>
             <div id="changelog-content" class="prose max-h-96 overflow-y-auto" style="color: var(--text-muted);">
+                <h3 class="font-bold highlight">v0.05 (2024-07-30)</h3>
+                <ul>
+                    <li>Implemented full CRUD (Create, Read, Update, Delete) functionality for webhooks.</li>
+                    <li>The "Add Webhook" button now opens a modal to create a new webhook entry.</li>
+                    <li>Each webhook item now has "Edit" and "Delete" buttons.</li>
+                    <li>The "Edit" button reuses the same modal, pre-filled with the data for editing.</li>
+                    <li>The "Delete" button removes the webhook from the list.</li>
+                </ul>
                 <h3 class="font-bold highlight">v0.04 (2024-07-30)</h3>
                 <ul>
                     <li>Replaced the static webhook button with a dedicated, togglable "Webhooks" menu.</li>
@@ -394,6 +453,7 @@
         const authModal = document.getElementById('auth-modal');
         const detailsModal = document.getElementById('details-modal');
         const addLinkModal = document.getElementById('add-link-modal');
+        const webhookModal = document.getElementById('webhook-modal');
         const changelogModal = document.getElementById('changelog-modal');
 
         // --- Buttons ---
@@ -401,10 +461,14 @@
         const addLinkBtn = document.getElementById('add-link-btn');
         const changelogBtn = document.getElementById('changelog-btn');
         const modalOpenBtn = document.getElementById('modal-open-btn');
-
+        const addWebhookBtn = document.getElementById('add-webhook-btn');
+        
         // --- Webhook Elements ---
         const webhookMenu = document.getElementById('webhook-menu');
         const webhookList = document.getElementById('webhook-list');
+        const webhookForm = document.getElementById('webhook-form');
+        const webhookModalTitle = document.getElementById('webhook-modal-title');
+        const webhookEditIndex = document.getElementById('webhook-edit-index');
 
         let allLinks = [];
         let allWebhooks = [];
@@ -429,23 +493,26 @@
             addCardClickListeners();
         };
 
-        const createWebhookItemHTML = (webhook) => `
-            <a href="${webhook.url}" target="_blank" rel="noopener noreferrer" class="webhook-item">
-                <div>
-                    <h4 class="font-bold highlight">${webhook.title}</h4>
-                    <p class="text-sm" style="color: var(--text-muted);">${webhook.description}</p>
+        const createWebhookItemHTML = (webhook, index) => `
+            <div class="webhook-item">
+                <a href="${webhook.url}" target="_blank" rel="noopener noreferrer" class="flex-grow">
+                    <div>
+                        <h4 class="font-bold highlight">${webhook.title}</h4>
+                        <p class="text-sm" style="color: var(--text-muted);">${webhook.description}</p>
+                    </div>
+                </a>
+                <div class="flex items-center gap-2">
+                    <span class="indicator-light ${webhook.status === 'active' ? 'green blinking' : 'grey'}" title="${webhook.status}"></span>
+                    <button class="action-btn edit-webhook-btn" data-index="${index}">Edit</button>
+                    <button class="action-btn delete-webhook-btn delete" data-index="${index}">Delete</button>
                 </div>
-                <div class="flex items-center gap-3">
-                    <span class="indicator-light ${webhook.status === 'active' ? 'green blinking' : 'grey'}" title="Active"></span>
-                    <span class="indicator-light grey" title="Inactive"></span>
-                    <span class="indicator-light grey" title="Inactive"></span>
-                </div>
-            </a>
+            </div>
         `;
         
         const renderWebhooks = () => {
             if (!webhookList) return;
             webhookList.innerHTML = allWebhooks.map(createWebhookItemHTML).join('');
+            addWebhookActionListeners();
         };
 
         // --- Modal Management ---
@@ -458,10 +525,12 @@
         
         detailsModal.addEventListener('click', (e) => { if (e.target === detailsModal) closeModal(detailsModal); });
         addLinkModal.addEventListener('click', (e) => { if (e.target === addLinkModal) closeModal(addLinkModal); });
+        webhookModal.addEventListener('click', (e) => { if (e.target === webhookModal) closeModal(webhookModal); });
         changelogModal.addEventListener('click', (e) => { if (e.target === changelogModal) closeModal(changelogModal); });
 
         document.getElementById('modal-close-btn').addEventListener('click', () => closeModal(detailsModal));
         document.getElementById('add-link-modal-close-btn').addEventListener('click', () => closeModal(addLinkModal));
+        document.getElementById('webhook-modal-close-btn').addEventListener('click', () => closeModal(webhookModal));
         document.getElementById('changelog-modal-close-btn').addEventListener('click', () => closeModal(changelogModal));
 
 
@@ -496,7 +565,7 @@
             });
         };
         
-        // --- Add New Link Logic ---
+        // --- CRUD Logic ---
         const addLinkForm = document.getElementById('add-link-form');
         const aiStatus = document.getElementById('ai-status');
 
@@ -510,14 +579,12 @@
 
             try {
                 await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
-                
                 const newLink = {
                     title: "AI Generated Title",
                     summary: "This is a summary generated by the AI based on the content of the provided URL.",
                     url: url,
                     category: "new"
                 };
-
                 allLinks.unshift(newLink);
                 renderLinks();
                 aiStatus.textContent = 'Successfully added!';
@@ -526,13 +593,67 @@
                     addLinkForm.reset();
                     aiStatus.textContent = '';
                 }, 1500);
-
             } catch (error) {
                 console.error("AI Error:", error);
                 aiStatus.textContent = 'Failed to analyze the link. Please try again.';
             } finally {
                 document.getElementById('submit-link-btn').disabled = false;
             }
+        });
+
+        addWebhookBtn.addEventListener('click', () => {
+            webhookModalTitle.textContent = "Add New Webhook";
+            webhookForm.reset();
+            webhookEditIndex.value = -1;
+            openModal(webhookModal);
+        });
+
+        function addWebhookActionListeners() {
+            document.querySelectorAll('.edit-webhook-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = e.target.dataset.index;
+                    const webhook = allWebhooks[index];
+                    
+                    webhookModalTitle.textContent = "Edit Webhook";
+                    webhookEditIndex.value = index;
+                    document.getElementById('webhook-title').value = webhook.title;
+                    document.getElementById('webhook-description').value = webhook.description;
+                    document.getElementById('webhook-url').value = webhook.url;
+                    document.getElementById('webhook-status').value = webhook.status;
+                    
+                    openModal(webhookModal);
+                });
+            });
+
+            document.querySelectorAll('.delete-webhook-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = e.target.dataset.index;
+                    // In a real app, you'd want a confirmation dialog here.
+                    allWebhooks.splice(index, 1);
+                    renderWebhooks();
+                });
+            });
+        }
+
+        webhookForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const index = webhookEditIndex.value;
+            const webhookData = {
+                title: document.getElementById('webhook-title').value,
+                description: document.getElementById('webhook-description').value,
+                url: document.getElementById('webhook-url').value,
+                status: document.getElementById('webhook-status').value,
+            };
+
+            if (index > -1) {
+                // Editing existing
+                allWebhooks[index] = webhookData;
+            } else {
+                // Adding new
+                allWebhooks.push(webhookData);
+            }
+            renderWebhooks();
+            closeModal(webhookModal);
         });
 
 
