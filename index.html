@@ -8,5 +8,575 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Particles.js for background effects -->
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-…</body>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Theme Definitions --- */
+        :root {
+            --bg-dark: #2c001e;
+            --text-main: #f2f2f2;
+            --text-muted: #d9d9d9;
+            --highlight-primary: #E95420;
+            --highlight-secondary: #dd4814;
+            --border-color: #58334d;
+            --particle-color: #E95420;
+            --particle-line-color: #58334d;
+            --bg-card-glass: rgba(59, 20, 47, 0.25);
+            --border-card-glass: rgba(233, 84, 32, 0.2);
+            --border-card-glow: rgba(233, 84, 32, 0.5);
+            --modal-bg: rgba(26, 9, 21, 0.8);
+        }
+
+        .theme-pastel-terminal {
+            --bg-dark: #211F2C;
+            --text-main: #EAE6FF;
+            --text-muted: #b0a9d4;
+            --highlight-primary: #A48DFA;
+            --highlight-secondary: #8DFAAF;
+            --border-color: #403d52;
+            --particle-color: #A48DFA;
+            --particle-line-color: #403d52;
+            --bg-card-glass: rgba(42, 39, 57, 0.25);
+            --border-card-glass: rgba(164, 141, 250, 0.2);
+            --border-card-glow: rgba(164, 141, 250, 0.5);
+            --modal-bg: rgba(33, 31, 44, 0.8);
+        }
+
+        .theme-light-fruity {
+            --bg-dark: #FFF9F2;
+            --text-main: #5D4037;
+            --text-muted: #795548;
+            --highlight-primary: #FF7043;
+            --highlight-secondary: #FFCA28;
+            --border-color: #FFCCBC;
+            --particle-color: #FF7043;
+            --particle-line-color: #FFCCBC;
+            --bg-card-glass: rgba(255, 255, 255, 0.4);
+            --border-card-glass: rgba(255, 112, 67, 0.3);
+            --border-card-glow: rgba(255, 112, 67, 0.6);
+            --modal-bg: rgba(255, 249, 242, 0.8);
+        }
+
+        /* --- Core Styles --- */
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Ubuntu', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Ubuntu Mono', monospace; }
+        
+        /* --- Decorative Backgrounds --- */
+        .background-blobs {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            overflow: hidden; z-index: 0;
+        }
+        .background-blobs div {
+            position: absolute; border-radius: 50%;
+            filter: blur(120px); opacity: 0.4;
+            transition: background 0.5s ease;
+        }
+        .blob1 {
+            width: 450px; height: 450px; background: var(--highlight-primary);
+            top: -150px; left: -150px;
+        }
+        .blob2 {
+            width: 350px; height: 350px; background: var(--highlight-secondary);
+            bottom: -100px; right: -100px;
+        }
+
+        #particles-js {
+            position: fixed; width: 100%; height: 100%;
+            top: 0; left: 0; z-index: 1;
+        }
+        .content-wrapper { position: relative; z-index: 2; }
+
+        /* --- Card Styles (Glassmorphism + 3D) --- */
+        .item-card {
+            background: var(--bg-card-glass);
+            border: 1px solid var(--border-card-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 1rem;
+            transform-style: preserve-3d;
+            transition: transform 0.1s linear, border-color 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex; flex-direction: column;
+        }
+        .item-card:hover {
+            border-color: var(--border-card-glow);
+            box-shadow: 0 0 30px -10px var(--border-card-glow);
+        }
+        .highlight { color: var(--highlight-primary); }
+
+        /* --- Glowing Header --- */
+        .glow {
+            text-shadow: 0 0 8px var(--highlight-primary), 0 0 20px var(--highlight-secondary);
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from {
+                text-shadow: 0 0 8px var(--highlight-primary), 0 0 20px var(--highlight-secondary);
+            }
+            to {
+                text-shadow: 0 0 12px var(--highlight-primary), 0 0 30px var(--highlight-secondary);
+            }
+        }
+        
+        /* --- Button Styles --- */
+        .control-btn {
+            background: var(--bg-card-glass);
+            border: 1px solid var(--border-card-glass);
+            color: var(--text-muted);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            font-family: 'Ubuntu Mono', monospace;
+        }
+        .control-btn:hover {
+            border-color: var(--border-card-glow);
+            color: var(--text-main);
+            transform: translateY(-2px);
+        }
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: translateY(0);
+        }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--modal-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: var(--bg-card-glass);
+            border: 1px solid var(--border-card-glow);
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        
+        /* --- Theme Switcher FAB --- */
+        #theme-fab-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100; display: flex; gap: 0.75rem; }
+        .fab {
+            width: 3.5rem; height: 3.5rem; border-radius: 50%;
+            background-color: var(--bg-card-glass);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .fab:hover { transform: scale(1.1) rotate(15deg); }
+        .fab-icon { width: 1.5rem; height: 1.5rem; color: var(--highlight-primary); }
+
+        /* --- Webhook Status Indicator --- */
+        .indicator-light {
+            width: 0.75rem; /* 12px */
+            height: 0.75rem; /* 12px */
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 0 5px 1px rgba(255,255,255,0.1);
+        }
+
+        .indicator-light.green { background-color: #4ade80; } /* tailwind green-400 */
+        .indicator-light.grey { background-color: #9ca3af; } /* tailwind gray-400 */
+        .indicator-light.red { background-color: #f87171; } /* tailwind red-400 */
+        .indicator-light.orange { background-color: #fb923c; } /* tailwind orange-400 */
+
+        .blinking {
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; box-shadow: 0 0 5px 2px var(--highlight-primary); }
+            50% { opacity: 0.4; box-shadow: none; }
+        }
+
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Background Elements -->
+    <div class="background-blobs">
+        <div class="blob1"></div>
+        <div class="blob2"></div>
+    </div>
+    <div id="particles-js"></div>
+
+    <!-- Main Content Wrapper (Initially hidden for auth) -->
+    <div id="main-content" class="content-wrapper container mx-auto p-4 md:p-8 max-w-7xl" style="display: none;">
+        <!-- Header -->
+        <header class="text-center mb-12 pt-8 sm:pt-16">
+            <h1 class="text-4xl md:text-6xl font-bold glow">Interactive Link Directory</h1>
+            <p class="text-lg mt-2" style="color: var(--text-muted);">A curated collection of projects and resources.</p>
+            <div class="mt-8 flex justify-center gap-4">
+                <button id="add-link-btn" class="control-btn">Add New Link</button>
+                <button id="changelog-btn" class="control-btn">Changelog</button>
+            </div>
+        </header>
+
+        <!-- Webhook Status Bar -->
+        <div class="flex justify-center mb-12">
+            <a href="https://n8n.sudev.site/webhook-test/start" target="_blank" rel="noopener noreferrer" class="control-btn flex items-center gap-4 p-4 hover:shadow-lg hover:border-card-glow" style="transition: all 0.3s ease;">
+                <h3 class="text-lg font-mono highlight">Webhook Status</h3>
+                <div class="flex items-center gap-3">
+                    <span class="indicator-light green blinking" title="Active"></span>
+                    <span class="indicator-light grey" title="Inactive"></span>
+                    <span class="indicator-light grey" title="Inactive"></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Main Grid for Item Cards -->
+        <main id="item-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 min-h-[50vh]">
+            <!-- Cards will be injected here by JavaScript -->
+        </main>
+        
+        <footer class="text-center mt-12 py-8 text-sm" style="color: var(--text-muted);">
+            <p>&copy; 2024 Link Directory | Built with Gemini</p>
+        </footer>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold highlight mb-4">Authentication Required</h2>
+            <form id="auth-form">
+                <div class="mb-4">
+                    <label for="username" class="block mb-2 font-mono" style="color: var(--text-muted);">User</label>
+                    <input type="text" id="username" required class="w-full p-2 rounded bg-transparent border" style="border-color: var(--border-color);">
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block mb-2 font-mono" style="color: var(--text-muted);">Password</label>
+                    <input type="password" id="password" required class="w-full p-2 rounded bg-transparent border" style="border-color: var(--border-color);">
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="control-btn">Login</button>
+                </div>
+                <p id="auth-error" class="text-sm mt-4 text-center text-red-400"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="details-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title" class="text-2xl font-bold highlight mb-4"></h2>
+            <p id="modal-summary" class="mb-6" style="color: var(--text-muted);"></p>
+            <div class="flex justify-between items-center">
+                <button id="modal-open-btn" class="control-btn">Open Site</button>
+                <button id="modal-close-btn" class="control-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Link Modal -->
+    <div id="add-link-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold highlight mb-4">Add a New Link</h2>
+            <form id="add-link-form">
+                <div class="mb-4">
+                    <label for="link-url" class="block mb-2 font-mono" style="color: var(--text-muted);">Website URL</label>
+                    <input type="url" id="link-url" required class="w-full p-2 rounded bg-transparent border" style="border-color: var(--border-color);">
+                </div>
+                <div class="flex justify-between items-center">
+                    <button type="submit" id="submit-link-btn" class="control-btn">Analyze & Add</button>
+                    <button type="button" id="add-link-modal-close-btn" class="control-btn">Cancel</button>
+                </div>
+                <p id="ai-status" class="text-sm mt-4 text-center" style="color: var(--text-muted);"></p>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Changelog Modal -->
+    <div id="changelog-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold highlight mb-4">Changelog</h2>
+            <div id="changelog-content" class="prose max-h-96 overflow-y-auto" style="color: var(--text-muted);">
+                <h3 class="font-bold highlight">v0.03 (2024-07-30)</h3>
+                <ul>
+                    <li>Updated the password for the client-side authentication prompt to 'udlrabba' as requested.</li>
+                    <li>Maintained the simple auth mechanism for demonstration purposes.</li>
+                </ul>
+                <h3 class="font-bold highlight">v0.02 (2024-07-30)</h3>
+                <ul>
+                    <li>Added a glowing text effect to the main header title for enhanced visual appeal.</li>
+                    <li>Implemented a new Webhook Status bar as a centered button.</li>
+                    <li>The status bar is clickable and includes three status indicator lights (active, inactive).</li>
+                    <li>The active (green) light has a blinking animation.</li>
+                </ul>
+                <h3 class="font-bold highlight">v0.01 (2024-07-30)</h3>
+                <ul>
+                    <li>Initial project framework creation and PRD integration.</li>
+                    <li>Established basic MVP with 14 initial links.</li>
+                    <li>Implemented 3D card UI with glassmorphism, hover effects, and a modal for details.</li>
+                    <li>Added a theme switcher with three distinct visual styles.</li>
+                    <li>Stubbed out "Add New Link" functionality with a placeholder for Gemini API integration.</li>
+                </ul>
+            </div>
+            <div class="flex justify-end mt-6">
+                <button id="changelog-modal-close-btn" class="control-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Theme Switcher -->
+    <div id="theme-fab-container">
+         <button id="theme-fab-toggle" class="fab" title="Switch Theme">
+            <svg class="fab-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402a3.75 3.75 0 00-5.304-5.304L4.098 14.6c-.39.39-.39 1.023 0 1.414l.495.495a1.875 1.875 0 010 2.652l-.495.495a1.875 1.875 0 01-2.652 0l-.495-.495a1.875 1.875 0 010-2.652l6.402-6.401a3.75 3.75 0 005.304 5.304l-6.402 6.401a3.75 3.75 0 00-5.304 0z" />
+            </svg>
+        </button>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const mainContent = document.getElementById('main-content');
+        const grid = document.getElementById('item-grid');
+        
+        // --- Modals ---
+        const authModal = document.getElementById('auth-modal');
+        const detailsModal = document.getElementById('details-modal');
+        const addLinkModal = document.getElementById('add-link-modal');
+        const changelogModal = document.getElementById('changelog-modal');
+
+        // --- Buttons ---
+        const addLinkBtn = document.getElementById('add-link-btn');
+        const changelogBtn = document.getElementById('changelog-btn');
+        const modalOpenBtn = document.getElementById('modal-open-btn');
+
+        let allLinks = [];
+
+        // --- UI Rendering ---
+        const createItemCardHTML = (item, index) => `
+            <div class="item-card" data-index="${index}">
+                <div class="p-6 flex flex-col flex-grow">
+                    <h3 class="text-lg font-bold highlight h-16 overflow-hidden">${item.title}</h3>
+                    <p class="text-sm mt-2 flex-grow" style="color: var(--text-muted);">${item.summary.substring(0, 100)}${item.summary.length > 100 ? '...' : ''}</p>
+                </div>
+                <div class="p-4 border-t" style="border-color: var(--border-card-glass);">
+                    <span class="text-xs font-mono" style="color: var(--text-muted);">Click to view details</span>
+                </div>
+            </div>
+        `;
+
+        const renderLinks = () => {
+            if (!grid) return;
+            grid.innerHTML = allLinks.map(createItemCardHTML).join('');
+            init3dCards();
+            addCardClickListeners();
+        };
+
+        // --- Modal Management ---
+        const openModal = (modal) => modal.classList.add('visible');
+        const closeModal = (modal) => modal.classList.remove('visible');
+
+        addLinkBtn.addEventListener('click', () => openModal(addLinkModal));
+        changelogBtn.addEventListener('click', () => openModal(changelogModal));
+        
+        detailsModal.addEventListener('click', (e) => { if (e.target === detailsModal) closeModal(detailsModal); });
+        addLinkModal.addEventListener('click', (e) => { if (e.target === addLinkModal) closeModal(addLinkModal); });
+        changelogModal.addEventListener('click', (e) => { if (e.target === changelogModal) closeModal(changelogModal); });
+
+        document.getElementById('modal-close-btn').addEventListener('click', () => closeModal(detailsModal));
+        document.getElementById('add-link-modal-close-btn').addEventListener('click', () => closeModal(addLinkModal));
+        document.getElementById('changelog-modal-close-btn').addEventListener('click', () => closeModal(changelogModal));
+
+
+        // --- Event Listeners ---
+        const init3dCards = () => {
+            document.querySelectorAll('.item-card, .control-btn.flex').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    if(card.classList.contains('control-btn')) return; // Don't apply to webhook button
+                    const { width, height, left, top } = card.getBoundingClientRect();
+                    const x = e.clientX - left;
+                    const y = e.clientY - top;
+                    const maxRotate = 6;
+                    const rotateX = ((y - height / 2) / (height / 2) * -maxRotate).toFixed(2);
+                    const rotateY = ((x - width / 2) / (width / 2) * maxRotate).toFixed(2);
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    if(card.classList.contains('control-btn')) return;
+                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+                });
+            });
+        };
+
+        const addCardClickListeners = () => {
+            document.querySelectorAll('.item-card').forEach(card => {
+                if (card.querySelector('.indicator-light')) return;
+                
+                card.addEventListener('click', () => {
+                    const index = card.dataset.index;
+                    const item = allLinks[index];
+                    document.getElementById('modal-title').textContent = item.title;
+                    document.getElementById('modal-summary').textContent = item.summary;
+                    modalOpenBtn.onclick = () => window.open(item.url, '_blank');
+                    openModal(detailsModal);
+                });
+            });
+        };
+        
+        // --- Add New Link Logic ---
+        const addLinkForm = document.getElementById('add-link-form');
+        const aiStatus = document.getElementById('ai-status');
+
+        addLinkForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('link-url').value;
+            if (!url) return;
+
+            aiStatus.textContent = 'Analyzing website with Gemini...';
+            document.getElementById('submit-link-btn').disabled = true;
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
+                
+                const newLink = {
+                    title: "AI Generated Title",
+                    summary: "This is a summary generated by the AI based on the content of the provided URL.",
+                    url: url,
+                    category: "new"
+                };
+
+                allLinks.unshift(newLink);
+                renderLinks();
+                aiStatus.textContent = 'Successfully added!';
+                setTimeout(() => {
+                    closeModal(addLinkModal);
+                    addLinkForm.reset();
+                    aiStatus.textContent = '';
+                }, 1500);
+
+            } catch (error) {
+                console.error("AI Error:", error);
+                aiStatus.textContent = 'Failed to analyze the link. Please try again.';
+            } finally {
+                document.getElementById('submit-link-btn').disabled = false;
+            }
+        });
+
+
+        // --- Theme Management ---
+        const themes = ['theme-ubuntu', 'theme-pastel-terminal', 'theme-light-fruity'];
+        const themeData = {
+            'theme-ubuntu': { particleColor: '#E95420', lineColor: '#58334d' },
+            'theme-pastel-terminal': { particleColor: '#A48DFA', lineColor: '#403d52' },
+            'theme-light-fruity': { particleColor: '#FF7043', lineColor: '#FFCCBC' },
+        };
+        let currentThemeIndex = 0;
+
+        const loadParticles = (theme) => {
+            if (window.pJSDom && window.pJSDom.length > 0) {
+                window.pJSDom[0].pJS.fn.vendors.destroypJS();
+                window.pJSDom = [];
+            }
+            particlesJS('particles-js', {
+                "particles": { "number": { "value": 50, "density": { "enable": true, "value_area": 800 } }, "color": { "value": themeData[theme].particleColor }, "shape": { "type": "circle" }, "opacity": { "value": 0.5, "random": false }, "size": { "value": 3, "random": true }, "line_linked": { "enable": true, "distance": 150, "color": themeData[theme].lineColor, "opacity": 0.4, "width": 1 }, "move": { "enable": true, "speed": 1, "direction": "none", "out_mode": "out" } }, "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": false } } }, "retina_detect": true
+            });
+        }
+
+        const setTheme = (themeName) => {
+            document.documentElement.className = themeName;
+            localStorage.setItem('directory-theme', themeName);
+            currentThemeIndex = themes.indexOf(themeName);
+            loadParticles(themeName);
+        }
+
+        document.getElementById('theme-fab-toggle').addEventListener('click', () => {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            setTheme(themes[currentThemeIndex]);
+        });
+
+        // --- Application Startup ---
+        const startApp = () => {
+            mainContent.style.display = 'block';
+            const savedTheme = localStorage.getItem('directory-theme') || 'theme-ubuntu';
+            setTheme(savedTheme);
+            
+            try {
+                const initialData = [
+                    {"title": "n8n Learning Path", "url": "https://ryudswift.github.io/startHERE/", "summary": "Your n8n Learning Path: From Basics to Business.", "category": "GitHub"},
+                    {"title": "Automation Profile", "url": "https://ryudswift.github.io/Profile/", "summary": "My Profile automation profile card for those interested to know more about me.", "category": "GitHub"},
+                    {"title": "AI Reddit Profile Review", "url": "https://ryudswift.github.io/Profile-Review/", "summary": "AI detailed review of my Reddit user Profile, public standpoint.", "category": "GitHub"},
+                    {"title": "Koerner's Content Tracker", "url": "https://ryudswift.github.io/ideaDash/", "summary": "My personal tracker for Koerner's content.", "category": "GitHub"},
+                    {"title": "Website Generation Showcase", "url": "https://ryudswift.github.io/showcase/", "summary": "Test Project for learning to generate website from ideas.", "category": "GitHub"},
+                    {"title": "i3-wm Cheat Sheet", "url": "https://ryudswift.github.io/i3-wm-cheat-sheet/", "summary": "Quick-Start Keyboard Shortcut Cheat Sheet.", "category": "GitHub"},
+                    {"title": "DevDash Templates", "url": "https://ryudswift.github.io/devDash/", "summary": "Website templates, a collection of mock template projects, each with three distinct visual styles.", "category": "GitHub"},
+                    {"title": "Demo TA Bot 2", "url": "https://ryudswift.github.io/ta-bot-gg/", "summary": "Test - Demo TA Bot 2", "category": "GitHub"},
+                    {"title": "Outreach Automation Demo", "url": "https://ryudswift.github.io/SuOS/", "summary": "Demo - Outreach automation dashboard", "category": "GitHub"},
+                    {"title": "UI Component Library", "url": "https://ryudswift.github.io/wedev-el/", "summary": "A dynamic library of UI components only using html, css and javascript.", "category": "GitHub"},
+                    {"title": "SwiftSheets Index", "url": "https://ryudswift.github.io/swiftsheets/", "summary": "An automated index of guides, tools, and notes.", "category": "GitHub"},
+                    {"title": "Nexus Cards Learning Kit", "url": "https://ryudswift.github.io/nexus-cards/", "summary": "My gamified online learning kit from Youtube videos.", "category": "GitHub"},
+                    {"title": "YouTube Expert Chat", "url": "https://n8n.sudev.site/webhook/0d3c55d2-0a78-420c-9dae-6eac12486e18/chat", "summary": "Youtube expert chat and google doc key points and action plan.", "category": "n8n"},
+                    {"title": "HTML Page Saver", "url": "https://n8n.sudev.site/webhook/31af5a47-d56b-47ff-a10e-72eb110eb512/chat", "summary": "Paste html full generated pages in html raw data into a chat windows which is this link, and it will save it to the database.", "category": "n8n"}
+                ];
+                allLinks = initialData;
+                renderLinks();
+            } catch (error) {
+                grid.innerHTML = `<p class="col-span-full text-center text-red-400">Failed to load initial data.</p>`;
+                console.error("Initialization Error:", error);
+            }
+        };
+
+        // --- Authentication Logic ---
+        const handleAuth = () => {
+            if (sessionStorage.getItem('isAuthenticated')) {
+                startApp();
+            } else {
+                openModal(authModal);
+            }
+        };
+
+        const authForm = document.getElementById('auth-form');
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const authError = document.getElementById('auth-error');
+
+            // IMPORTANT: This is NOT secure and is for UI demonstration only.
+            // In a real application, use a proper backend authentication system.
+            if (username === 'ryud' && password === 'udlrabba') {
+                sessionStorage.setItem('isAuthenticated', 'true');
+                closeModal(authModal);
+                startApp();
+            } else {
+                authError.textContent = 'Invalid credentials. Please try again.';
+            }
+        });
+
+        // --- Initial Load ---
+        handleAuth();
+    });
+    </script>
+</body>
 </html>
