@@ -195,25 +195,49 @@
         .fab:hover { transform: scale(1.1) rotate(15deg); }
         .fab-icon { width: 1.5rem; height: 1.5rem; color: var(--highlight-primary); }
 
-        /* --- Webhook Status Indicator --- */
+        /* --- Webhook Section --- */
+        #webhook-menu {
+            background: var(--bg-card-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+            transition: all 0.5s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+        #webhook-menu.open {
+            max-height: 1000px; /* Arbitrary large value */
+            opacity: 1;
+            padding: 1.5rem;
+        }
+        .webhook-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .webhook-item:hover {
+            border-color: var(--border-card-glow);
+            background-color: rgba(255,255,255,0.05);
+        }
+
         .indicator-light {
-            width: 0.75rem; /* 12px */
-            height: 0.75rem; /* 12px */
+            width: 0.75rem; height: 0.75rem;
             border-radius: 50%;
             display: inline-block;
             transition: background-color 0.3s ease;
             box-shadow: 0 0 5px 1px rgba(255,255,255,0.1);
         }
-
-        .indicator-light.green { background-color: #4ade80; } /* tailwind green-400 */
-        .indicator-light.grey { background-color: #9ca3af; } /* tailwind gray-400 */
-        .indicator-light.red { background-color: #f87171; } /* tailwind red-400 */
-        .indicator-light.orange { background-color: #fb923c; } /* tailwind orange-400 */
-
-        .blinking {
-            animation: blink 1.5s infinite;
-        }
-
+        .indicator-light.green { background-color: #4ade80; }
+        .indicator-light.grey { background-color: #9ca3af; }
+        .indicator-light.red { background-color: #f87171; }
+        .indicator-light.orange { background-color: #fb923c; }
+        .blinking { animation: blink 1.5s infinite; }
         @keyframes blink {
             0%, 100% { opacity: 1; box-shadow: 0 0 5px 2px var(--highlight-primary); }
             50% { opacity: 0.4; box-shadow: none; }
@@ -232,26 +256,26 @@
     <!-- Main Content Wrapper (Initially hidden for auth) -->
     <div id="main-content" class="content-wrapper container mx-auto p-4 md:p-8 max-w-7xl" style="display: none;">
         <!-- Header -->
-        <header class="text-center mb-12 pt-8 sm:pt-16">
+        <header class="text-center mb-8 pt-8 sm:pt-16">
             <h1 class="text-4xl md:text-6xl font-bold glow">Interactive Link Directory</h1>
             <p class="text-lg mt-2" style="color: var(--text-muted);">A curated collection of projects and resources.</p>
             <div class="mt-8 flex justify-center gap-4">
+                <button id="toggle-webhooks-btn" class="control-btn">Webhooks</button>
                 <button id="add-link-btn" class="control-btn">Add New Link</button>
                 <button id="changelog-btn" class="control-btn">Changelog</button>
             </div>
         </header>
 
-        <!-- Webhook Status Bar -->
-        <div class="flex justify-center mb-12">
-            <a href="https://n8n.sudev.site/webhook-test/start" target="_blank" rel="noopener noreferrer" class="control-btn flex items-center gap-4 p-4 hover:shadow-lg hover:border-card-glow" style="transition: all 0.3s ease;">
-                <h3 class="text-lg font-mono highlight">Webhook Status</h3>
-                <div class="flex items-center gap-3">
-                    <span class="indicator-light green blinking" title="Active"></span>
-                    <span class="indicator-light grey" title="Inactive"></span>
-                    <span class="indicator-light grey" title="Inactive"></span>
-                </div>
-            </a>
-        </div>
+        <!-- Webhook Menu (Togglable) -->
+        <section id="webhook-menu">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Webhook Controls</h2>
+                <button id="add-webhook-btn" class="control-btn text-sm">Add Webhook</button>
+            </div>
+            <div id="webhook-list" class="space-y-2">
+                <!-- Webhooks will be injected here -->
+            </div>
+        </section>
 
         <!-- Main Grid for Item Cards -->
         <main id="item-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 min-h-[50vh]">
@@ -319,25 +343,30 @@
         <div class="modal-content">
             <h2 class="text-2xl font-bold highlight mb-4">Changelog</h2>
             <div id="changelog-content" class="prose max-h-96 overflow-y-auto" style="color: var(--text-muted);">
+                <h3 class="font-bold highlight">v0.04 (2024-07-30)</h3>
+                <ul>
+                    <li>Replaced the static webhook button with a dedicated, togglable "Webhooks" menu.</li>
+                    <li>The menu can be opened and closed, and is designed to hold multiple webhook controls.</li>
+                    <li>Each webhook in the menu displays a title, description, and status lights.</li>
+                    <li>Added a placeholder "Add Webhook" button for future functionality.</li>
+                    <li>Webhook data is now managed in a separate array in the script, preparing for dynamic additions.</li>
+                </ul>
                 <h3 class="font-bold highlight">v0.03 (2024-07-30)</h3>
                 <ul>
-                    <li>Updated the password for the client-side authentication prompt to 'udlrabba' as requested.</li>
+                    <li>Updated the password for the client-side authentication prompt to 'udlrabba'.</li>
                     <li>Maintained the simple auth mechanism for demonstration purposes.</li>
                 </ul>
                 <h3 class="font-bold highlight">v0.02 (2024-07-30)</h3>
                 <ul>
-                    <li>Added a glowing text effect to the main header title for enhanced visual appeal.</li>
-                    <li>Implemented a new Webhook Status bar as a centered button.</li>
-                    <li>The status bar is clickable and includes three status indicator lights (active, inactive).</li>
-                    <li>The active (green) light has a blinking animation.</li>
+                    <li>Added a glowing text effect to the main header title.</li>
+                    <li>Implemented a Webhook Status bar as a centered button with status lights.</li>
                 </ul>
                 <h3 class="font-bold highlight">v0.01 (2024-07-30)</h3>
                 <ul>
                     <li>Initial project framework creation and PRD integration.</li>
                     <li>Established basic MVP with 14 initial links.</li>
                     <li>Implemented 3D card UI with glassmorphism, hover effects, and a modal for details.</li>
-                    <li>Added a theme switcher with three distinct visual styles.</li>
-                    <li>Stubbed out "Add New Link" functionality with a placeholder for Gemini API integration.</li>
+                    <li>Added a theme switcher and stubbed out "Add New Link" functionality.</li>
                 </ul>
             </div>
             <div class="flex justify-end mt-6">
@@ -368,11 +397,17 @@
         const changelogModal = document.getElementById('changelog-modal');
 
         // --- Buttons ---
+        const toggleWebhooksBtn = document.getElementById('toggle-webhooks-btn');
         const addLinkBtn = document.getElementById('add-link-btn');
         const changelogBtn = document.getElementById('changelog-btn');
         const modalOpenBtn = document.getElementById('modal-open-btn');
 
+        // --- Webhook Elements ---
+        const webhookMenu = document.getElementById('webhook-menu');
+        const webhookList = document.getElementById('webhook-list');
+
         let allLinks = [];
+        let allWebhooks = [];
 
         // --- UI Rendering ---
         const createItemCardHTML = (item, index) => `
@@ -394,10 +429,30 @@
             addCardClickListeners();
         };
 
+        const createWebhookItemHTML = (webhook) => `
+            <a href="${webhook.url}" target="_blank" rel="noopener noreferrer" class="webhook-item">
+                <div>
+                    <h4 class="font-bold highlight">${webhook.title}</h4>
+                    <p class="text-sm" style="color: var(--text-muted);">${webhook.description}</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="indicator-light ${webhook.status === 'active' ? 'green blinking' : 'grey'}" title="Active"></span>
+                    <span class="indicator-light grey" title="Inactive"></span>
+                    <span class="indicator-light grey" title="Inactive"></span>
+                </div>
+            </a>
+        `;
+        
+        const renderWebhooks = () => {
+            if (!webhookList) return;
+            webhookList.innerHTML = allWebhooks.map(createWebhookItemHTML).join('');
+        };
+
         // --- Modal Management ---
         const openModal = (modal) => modal.classList.add('visible');
         const closeModal = (modal) => modal.classList.remove('visible');
 
+        toggleWebhooksBtn.addEventListener('click', () => webhookMenu.classList.toggle('open'));
         addLinkBtn.addEventListener('click', () => openModal(addLinkModal));
         changelogBtn.addEventListener('click', () => openModal(changelogModal));
         
@@ -412,9 +467,8 @@
 
         // --- Event Listeners ---
         const init3dCards = () => {
-            document.querySelectorAll('.item-card, .control-btn.flex').forEach(card => {
+            document.querySelectorAll('.item-card').forEach(card => {
                 card.addEventListener('mousemove', (e) => {
-                    if(card.classList.contains('control-btn')) return; // Don't apply to webhook button
                     const { width, height, left, top } = card.getBoundingClientRect();
                     const x = e.clientX - left;
                     const y = e.clientY - top;
@@ -424,7 +478,6 @@
                     card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
                 });
                 card.addEventListener('mouseleave', () => {
-                    if(card.classList.contains('control-btn')) return;
                     card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
                 });
             });
@@ -432,8 +485,6 @@
 
         const addCardClickListeners = () => {
             document.querySelectorAll('.item-card').forEach(card => {
-                if (card.querySelector('.indicator-light')) return;
-                
                 card.addEventListener('click', () => {
                     const index = card.dataset.index;
                     const item = allLinks[index];
@@ -523,7 +574,7 @@
             setTheme(savedTheme);
             
             try {
-                const initialData = [
+                const initialLinks = [
                     {"title": "n8n Learning Path", "url": "https://ryudswift.github.io/startHERE/", "summary": "Your n8n Learning Path: From Basics to Business.", "category": "GitHub"},
                     {"title": "Automation Profile", "url": "https://ryudswift.github.io/Profile/", "summary": "My Profile automation profile card for those interested to know more about me.", "category": "GitHub"},
                     {"title": "AI Reddit Profile Review", "url": "https://ryudswift.github.io/Profile-Review/", "summary": "AI detailed review of my Reddit user Profile, public standpoint.", "category": "GitHub"},
@@ -539,8 +590,24 @@
                     {"title": "YouTube Expert Chat", "url": "https://n8n.sudev.site/webhook/0d3c55d2-0a78-420c-9dae-6eac12486e18/chat", "summary": "Youtube expert chat and google doc key points and action plan.", "category": "n8n"},
                     {"title": "HTML Page Saver", "url": "https://n8n.sudev.site/webhook/31af5a47-d56b-47ff-a10e-72eb110eb512/chat", "summary": "Paste html full generated pages in html raw data into a chat windows which is this link, and it will save it to the database.", "category": "n8n"}
                 ];
-                allLinks = initialData;
+                const initialWebhooks = [
+                    { 
+                        title: "Main n8n Workflow", 
+                        description: "Primary webhook for general automation tasks.",
+                        url: "https://n8n.sudev.site/webhook-test/start",
+                        status: "active"
+                    },
+                    { 
+                        title: "Data Backup Hook", 
+                        description: "Nightly trigger for backing up application data.",
+                        url: "#",
+                        status: "inactive"
+                    }
+                ];
+                allLinks = initialLinks;
+                allWebhooks = initialWebhooks;
                 renderLinks();
+                renderWebhooks();
             } catch (error) {
                 grid.innerHTML = `<p class="col-span-full text-center text-red-400">Failed to load initial data.</p>`;
                 console.error("Initialization Error:", error);
@@ -563,8 +630,6 @@
             const password = document.getElementById('password').value;
             const authError = document.getElementById('auth-error');
 
-            // IMPORTANT: This is NOT secure and is for UI demonstration only.
-            // In a real application, use a proper backend authentication system.
             if (username === 'ryud' && password === 'udlrabba') {
                 sessionStorage.setItem('isAuthenticated', 'true');
                 closeModal(authModal);
